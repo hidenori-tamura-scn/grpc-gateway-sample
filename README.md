@@ -4,6 +4,11 @@
 
 https://qiita.com/ryu3/items/b2882d4f45c7f8485030
 
+また、Health Check部分は下記を参考にしています。
+
+https://qiita.com/gold-kou/items/63befd8c6d50dcc5c2eb
+
+
 ## 注意
 下記が必要です。
 ```
@@ -59,17 +64,18 @@ $ curl -X GET http://localhost:15000/v1/example/users/10
 
 {"id":"10","name":"SampleUser"}
 
-$ curl -X POST http://localhost:5000/v1/example/users -d '{"name":"nakata"}'
+$ curl -X POST http://localhost:15000/v1/example/users -d '{"name":"nakata"}'
 
 {"id":"123","name":"nakata"}
 
+$ curl -X POST http://localhost:15000/gcrp/health
+
+{"status":"SERVING"}
 ```
 
 
 ## その他
 proto/service.proto を変更した場合のprotocコマンドは下記の通りです。
-
-(近いうちにMakefileにします)
 
 ```
 $ protoc -I/usr/local/include -I. \
@@ -86,3 +92,21 @@ $ protoc -I/usr/local/include -I. \
   proto/service.proto # reverse-proxy側
 ```
 
+proto/health.proto を変更した場合のprotocコマンドは下記の通りです。
+
+```
+protoc -I/usr/local/include -I. \
+  -I$GOPATH/src \
+  -I$GOPATH/src/github.com/googleapis/googleapis \
+  --go_out=plugins=grpc:. \
+  proto/health.proto # health check の gRPC stub側
+```
+```
+protoc -I/usr/local/include -I. \
+  -I$GOPATH/src \
+  -I$GOPATH/src/github.com/googleapis/googleapis \
+  --grpc-gateway_out=logtostderr=true:. \
+  proto/health.proto # reverse-proxy の gRPC stub側
+```
+
+(近いうちにMakefileにします)

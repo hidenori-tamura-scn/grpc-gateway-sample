@@ -6,7 +6,15 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	// --- for health check
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	// ---
 	pb "local.packages/pb"
+	// --- for health check
+	health "local.packages/pb_health"
+	// ---
 )
 
 const (
@@ -38,6 +46,19 @@ func (s *server) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.
 		Name: in.Name}, nil
 }
 
+// --- for health check
+type HealthServer struct{}
+
+func (s *HealthServer) Check(ctx context.Context, in *health.DemoHealthCheckRequest) (*health.DemoHealthCheckResponse, error) {
+	return &health.DemoHealthCheckResponse{Status: health.DemoHealthCheckResponse_SERVING}, nil
+}
+func (s *HealthServer) Watch(in *health.DemoHealthCheckRequest, _ health.DemoHealth_WatchServer) error {
+	// Example of how to register both methods but only implement the Check method.
+	return status.Error(codes.Unimplemented, "unimplemented")
+}
+
+// ---
+
 func main() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
@@ -45,6 +66,9 @@ func main() {
 	}
 	s := grpc.NewServer()
 	pb.RegisterHelloWorldServiceServer(s, &server{})
+	// --- for health check
+	health.RegisterDemoHealthServer(s, &HealthServer{})
+	// ---
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

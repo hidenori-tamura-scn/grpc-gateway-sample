@@ -12,6 +12,9 @@ import (
 	"google.golang.org/grpc"
 
 	gw "local.packages/pb"
+	// --- for health check
+	healthGw "local.packages/pb_health"
+	// ---
 )
 
 func run() error {
@@ -29,6 +32,12 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	// --- for health check
+	err = healthGw.RegisterDemoHealthHandlerFromEndpoint(ctx, mux, endpoint, opts)
+	if err != nil {
+		return err
+	}
+	// ---
 
 	return http.ListenAndServe(":15000", mux)
 }

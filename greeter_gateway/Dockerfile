@@ -9,6 +9,10 @@ COPY go.mod .
 COPY go.sum .
 WORKDIR $APP_PATH/pb
 COPY pb .
+# --- for health check
+WORKDIR $APP_PATH/pb_health
+COPY pb_health .
+# ---
 WORKDIR $APP_PATH/greeter_gateway
 COPY greeter_gateway/main.go .
 
