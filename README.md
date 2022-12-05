@@ -68,7 +68,7 @@ $ curl -X POST http://localhost:15000/v1/example/users -d '{"name":"nakata"}'
 
 {"id":"123","name":"nakata"}
 
-$ curl -X POST http://localhost:15000/gcrp/health
+$ curl -X GET http://localhost:15000/grpc/health
 
 {"status":"SERVING"}
 ```

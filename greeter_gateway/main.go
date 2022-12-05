@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -24,10 +25,22 @@ func run() error {
 
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	endpoint := fmt.Sprintf("localhost:5001")
-	if os.Getenv("IS_DOCKER") == "true" {
-		endpoint = fmt.Sprintf("greeter-server:5001")
+	endpoint := os.Getenv("GRPC_GATEWAY_ENDPOINT")
+	log.Printf("Endpoint: %v", endpoint)
+	if endpoint == "" {
+		log.Printf("Then, endpoint is reset to localhost:5001.")
+		endpoint = fmt.Sprintf("localhost:5001")
 	}
+	// endpoint := fmt.Sprintf("demo-grpc-server.demo:5001")
+	// // TODO: refactaring
+	// if os.Getenv("IS_DOCKER") == "true" {
+	// 	// endpoint = fmt.Sprintf("greeter-server:5001")
+	// 	// endpoint = fmt.Sprintf("demo-grpc-server.demo:5001")
+	// 	endpoint = fmt.Sprintf("13.115.52.21:5001")
+	// }
+	// if os.Getenv("IS_ECS") == "true" {
+	// 	endpoint = fmt.Sprintf("demo-grpc-server.demo:5001")
+	// }
 	err := gw.RegisterHelloWorldServiceHandlerFromEndpoint(ctx, mux, endpoint, opts)
 	if err != nil {
 		return err

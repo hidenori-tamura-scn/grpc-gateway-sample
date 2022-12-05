@@ -27,5 +27,5 @@ RUN go env -w GO111MODULE=on
 RUN go mod tidy
 
 EXPOSE 15000
-ENV IS_DOCKER true
+ENV GRPC_GATEWAY_ENDPOINT greeter-server:5001
 CMD go run main.go

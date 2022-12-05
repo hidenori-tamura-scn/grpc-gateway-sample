@@ -35,10 +35,10 @@ resource "aws_lb_target_group" "demo_targetgroup" {
 
   health_check {
     enabled  = true
-    path     = "/v1/example/users" // TODO: /health などを作成
+    path     = "/grpc/health"
     protocol = "HTTP"
     port     = "traffic-port"
-    timeout  = 5
+    timeout  = 60 // 間隔が狭過ぎるととhealth checkに失敗するので注意
   }
 }
 
