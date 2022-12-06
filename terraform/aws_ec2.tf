@@ -38,6 +38,7 @@ resource "aws_lb_target_group" "demo_targetgroup" {
     path     = "/grpc/health"
     protocol = "HTTP"
     port     = "traffic-port"
+    interval = 90
     timeout  = 60 // 間隔が狭過ぎるととhealth checkに失敗するので注意
   }
 }

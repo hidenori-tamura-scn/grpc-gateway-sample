@@ -18,7 +18,7 @@ resource "aws_subnet" "demo_public_subnet_a" {
   vpc_id                  = aws_vpc.demo_vpc.id
   cidr_block              = "10.50.1.0/24"
   availability_zone       = "ap-northeast-1a"
-  map_public_ip_on_launch = false
+  map_public_ip_on_launch = true
 
   tags = {
     Name = "demo_public_subnet_a"
@@ -42,7 +42,7 @@ resource "aws_subnet" "demo_public_subnet_c" {
   vpc_id                  = aws_vpc.demo_vpc.id
   cidr_block              = "10.50.3.0/24"
   availability_zone       = "ap-northeast-1c"
-  map_public_ip_on_launch = false
+  map_public_ip_on_launch = true
 
   tags = {
     Name = "demo_public_subnet_c"
@@ -117,6 +117,26 @@ resource "aws_route_table_association" "demo_rt_assoc_private_c" {
 /*
 セキュリティグループ
 */
+
+// default（暫定）
+resource "aws_security_group" "demo_default_sg" {
+  name   = "demo_default_sg"
+  vpc_id = aws_vpc.demo_vpc.id
+  ingress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = -1
+    security_groups = [aws_security_group.demo_container_sg.id]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
 //ec2
 resource "aws_security_group" "demo_ec2_sg" {
   name   = "demo_ec2_sg"
@@ -252,28 +272,54 @@ resource "aws_vpc_endpoint" "demo_privatelink_logs" {
   }
 }
 
-//S3(ECS-S3接続に利用)
-resource "aws_vpc_endpoint" "demo_privatelink_s3" {
-  vpc_id       = aws_vpc.demo_vpc.id
-  service_name = "com.amazonaws.ap-northeast-1.s3"
-  policy       = <<POLICY
-    {
-        "Statement": [
-            {
-                "Action": "*",
-                "Effect": "Allow",
-                "Resource": "*",
-                "Principal": "*"
-            }
-        ]
-    }
-    POLICY
-  tags = {
-    Name = "demo_privatelink_s3"
-  }
+# //S3(ECS-S3接続に利用)
+# resource "aws_vpc_endpoint" "demo_privatelink_s3" {
+#   vpc_id       = aws_vpc.demo_vpc.id
+#   service_name = "com.amazonaws.ap-northeast-1.s3"
+#   policy       = <<POLICY
+#     {
+#         "Statement": [
+#             {
+#                 "Action": "*",
+#                 "Effect": "Allow",
+#                 "Resource": "*",
+#                 "Principal": "*"
+#             }
+#         ]
+#     }
+#     POLICY
+#   tags = {
+#     Name = "demo_privatelink_s3"
+#   }
+# }
+
+# resource "aws_vpc_endpoint_route_table_association" "demo_privatelink_s3_route_table_assoc" {
+#   vpc_endpoint_id = aws_vpc_endpoint.demo_privatelink_s3.id
+#   route_table_id  = aws_route_table.demo_private_rtb.id
+# }
+
+// DNS
+resource "aws_service_discovery_private_dns_namespace" "demo_internal" {
+  name        = "demo.internal"
+  description = "demo"
+  vpc         = aws_vpc.demo_vpc.id
 }
 
-resource "aws_vpc_endpoint_route_table_association" "demo_privatelink_s3_route_table_assoc" {
-  vpc_endpoint_id = aws_vpc_endpoint.demo_privatelink_s3.id
-  route_table_id  = aws_route_table.demo_private_rtb.id
+resource "aws_service_discovery_service" "demo_api" {
+  name = "demo-api"
+
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.demo_internal.id
+
+    dns_records {
+      ttl  = 3600
+      type = "A"
+    }
+
+    routing_policy = "MULTIVALUE"
+  }
+
+  health_check_custom_config {
+    failure_threshold = 1
+  }
 }

@@ -27,12 +27,6 @@ provider "aws" {
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
 variable "aws_account_id" {}
-variable "project" {
-  type = string
-}
-variable "environment" {
-  type = string
-}
-variable "domain" {
-  type = string
-}
+variable "project" {}
+variable "environment" {}
+variable "domain" {}
