@@ -109,4 +109,7 @@ protoc -I/usr/local/include -I. \
   proto/health.proto # reverse-proxy の gRPC stub側
 ```
 
-(近いうちにMakefileにします)
+なお、現在は下記でまとめて実行できます。
+```
+make
+```
