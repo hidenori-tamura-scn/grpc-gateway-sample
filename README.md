@@ -8,6 +8,8 @@ https://qiita.com/ryu3/items/b2882d4f45c7f8485030
 
 https://qiita.com/gold-kou/items/63befd8c6d50dcc5c2eb
 
+あと、ALB + ECS で動くようにしました。
+IaC は Terraform、CI/CD は GitHub Actions です。
 
 ## 注意
 下記が必要です。
