@@ -1,9 +1,25 @@
-# //Repository(DockeイメージをPushする先)
-# resource "aws_ecr_repository" "demo" {
-#   name                 = "demo"
+//Repository(DockerイメージをPushする先) ※terraform destory で 登録済みのDockerイメージが消えてしまうのでコメントアウト
+# resource "aws_ecr_repository" "demo-grpc-server" {
+#   name                 = "demo-grpc-server"
 #   image_tag_mutability = "MUTABLE"
 #   tags = {
-#     "Name" = "demo"
+#     "Name" = "demo-grpc-server"
+#   }
+
+#   encryption_configuration {
+#     encryption_type = "AES256"
+#   }
+
+#   image_scanning_configuration {
+#     scan_on_push = false
+#   }
+# }
+
+# resource "aws_ecr_repository" "demo-grpc-gateway" {
+#   name                 = "demo-grpc-gateway"
+#   image_tag_mutability = "MUTABLE"
+#   tags = {
+#     "Name" = "demo-grpc-gateway"
 #   }
 
 #   encryption_configuration {
@@ -16,64 +32,6 @@
 # }
 
 //タスク定義
-# resource "aws_ecs_task_definition" "demo_task_definition" {
-#   family = "demo-task"
-#   cpu    = 512
-#   memory = 1024
-
-#   container_definitions = jsonencode(
-#     [
-#       {
-#         name      = "demo-server-container"
-#         image     = "${var.aws_account_id}.dkr.ecr.ap-northeast-1.amazonaws.com/demo-grpc-server:latest"
-#         cpu       = 256
-#         memory    = 512
-#         essential = true
-#         portMappings = [
-#           {
-#             containerPort = 5001
-#             hostPort      = 5001
-#           }
-#         ]
-#         logConfiguration = {
-#           logDriver = "awslogs"
-#           options = {
-#             awslogs-group         = "/ecs/demo-task"
-#             awslogs-region        = "ap-northeast-1"
-#             awslogs-stream-prefix = "ecs"
-#           }
-#         }
-#       },
-#       {
-#         name      = "demo-gateway-container"
-#         image     = "${var.aws_account_id}.dkr.ecr.ap-northeast-1.amazonaws.com/demo-grpc-gateway:latest"
-#         cpu       = 256
-#         memory    = 512
-#         essential = true
-#         portMappings = [
-#           {
-#             containerPort = 15000
-#             hostPort      = 15000
-#           }
-#         ]
-#         logConfiguration = {
-#           logDriver = "awslogs"
-#           options = {
-#             awslogs-group         = "/ecs/demo-task"
-#             awslogs-region        = "ap-northeast-1"
-#             awslogs-stream-prefix = "ecs"
-#           }
-#         }
-#       },
-#     ]
-#   )
-#   network_mode = "awsvpc"
-#   requires_compatibilities = [
-#     "FARGATE",
-#   ]
-#   execution_role_arn = "arn:aws:iam::${var.aws_account_id}:role/ecsTaskExecutionRole"
-# }
-
 resource "aws_ecs_task_definition" "demo_grpc_server_task_definition" {
   family = "demo-grpc-server-task"
   cpu    = 256
@@ -170,28 +128,6 @@ resource "aws_ecs_cluster" "demo_ecs_cluster" {
 }
 
 //サービス
-# resource "aws_ecs_service" "demo_ecs_service" {
-#   name            = "demo-service"
-#   cluster         = aws_ecs_cluster.demo_ecs_cluster.name
-#   task_definition = aws_ecs_task_definition.demo_task_definition.arn
-#   launch_type     = "FARGATE"
-#   //コレ指定しないとLoadBalancer指定のところで落ちる
-#   depends_on = [aws_lb_target_group.demo_targetgroup]
-#   network_configuration {
-#     subnets         = [aws_subnet.demo_private_subnet_a.id]
-#     security_groups = [aws_security_group.demo_container_sg.id]
-#   }
-
-#   //ECSタスクの起動数
-#   desired_count = 0
-
-#   load_balancer {
-#     target_group_arn = aws_lb_target_group.demo_targetgroup.arn
-#     container_name   = "demo-gateway-container"
-#     container_port   = 15000
-#   }
-# }
-
 resource "aws_ecs_service" "demo_grpc_server_service" {
   name            = "demo-grpc-server-service"
   cluster         = aws_ecs_cluster.demo_ecs_cluster.name
@@ -200,13 +136,15 @@ resource "aws_ecs_service" "demo_grpc_server_service" {
   launch_type     = "FARGATE"
   network_configuration {
     assign_public_ip = true
-    subnets          = [aws_subnet.demo_public_subnet_a.id, aws_subnet.demo_public_subnet_c.id]
-    security_groups = [aws_security_group.demo_default_sg.id,
-      aws_security_group.demo_privatelink_sg.id,
-      aws_security_group.demo_alb_sg.id,
+    subnets = [
+      aws_subnet.demo_public_subnet_a.id,
+      aws_subnet.demo_public_subnet_c.id
+    ]
+    security_groups = [
       aws_security_group.demo_ec2_sg.id,
       aws_security_group.demo_container_sg.id,
-    aws_security_group.demo_privatelink_sg.id]
+      aws_security_group.demo_grpc_server_sg.id
+    ]
   }
 
   service_registries {
@@ -225,13 +163,15 @@ resource "aws_ecs_service" "demo_grpc_gateway_service" {
 
   network_configuration {
     assign_public_ip = true
-    subnets          = [aws_subnet.demo_public_subnet_a.id, aws_subnet.demo_public_subnet_c.id]
-    security_groups = [aws_security_group.demo_default_sg.id,
-      aws_security_group.demo_privatelink_sg.id,
-      aws_security_group.demo_alb_sg.id,
+    subnets = [
+      aws_subnet.demo_public_subnet_a.id,
+      aws_subnet.demo_public_subnet_c.id
+    ]
+    security_groups = [
       aws_security_group.demo_ec2_sg.id,
       aws_security_group.demo_container_sg.id,
-    aws_security_group.demo_privatelink_sg.id]
+      aws_security_group.demo_alb_sg.id
+    ]
   }
 
   load_balancer {
