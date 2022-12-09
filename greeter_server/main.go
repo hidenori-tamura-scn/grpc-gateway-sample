@@ -49,8 +49,10 @@ func (s *server) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.
 // --- for health check
 type HealthServer struct{}
 
+var version string
+
 func (s *HealthServer) Check(ctx context.Context, in *health.DemoHealthCheckRequest) (*health.DemoHealthCheckResponse, error) {
-	return &health.DemoHealthCheckResponse{Status: health.DemoHealthCheckResponse_SERVING}, nil
+	return &health.DemoHealthCheckResponse{Status: health.DemoHealthCheckResponse_SERVING, Version: version}, nil
 }
 func (s *HealthServer) Watch(in *health.DemoHealthCheckRequest, _ health.DemoHealth_WatchServer) error {
 	// Example of how to register both methods but only implement the Check method.
