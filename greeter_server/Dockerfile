@@ -27,4 +27,6 @@ RUN go env -w GO111MODULE=on
 RUN go mod tidy
 
 EXPOSE 5001
-CMD go run main.go
+ARG DEMO_VERSION="v0.0.0"
+RUN go build -ldflags "-X main.version=$DEMO_VERSION" main.go
+CMD ./main

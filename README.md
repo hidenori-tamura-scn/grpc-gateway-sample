@@ -9,6 +9,7 @@ https://qiita.com/ryu3/items/b2882d4f45c7f8485030
 https://qiita.com/gold-kou/items/63befd8c6d50dcc5c2eb
 
 あと、ALB + ECS で動くようにしました。
+
 IaC は Terraform、CI/CD は GitHub Actions です。
 
 ## 注意
@@ -44,10 +45,13 @@ Dockerイメージ を build してから実行します。
 こちらも別々のターミナルで実行します。
 
 ```
-$ docker build --no-cache -t greeter-server-image:v1 -f greeter_server/Dockerfile . #serverのDockerイメージビルド
+$ docker build --no-cache -t greeter-server-image:v1 -f greeter_server/Dockerfile --build-arg DEMO_VERSION="v1.0.1". #serverのDockerイメージビルド
 
 $ docker run -p 5001:5001 --name greeter-server --rm greeter-server-image:v1 #serverの起動
 ```
+
+※ DEMO _VERSIONに指定した文字列は、health checkのresoponseに出力されます
+
 ```
 $ docker build --no-cache -t greeter-gateway-image:v1 -f greeter_gateway/Dockerfile . #gatewayのDockerイメージビルド
 
@@ -72,7 +76,7 @@ $ curl -X POST http://localhost:15000/v1/example/users -d '{"name":"nakata"}'
 
 $ curl -X GET http://localhost:15000/grpc/health
 
-{"status":"SERVING"}
+{"status":"SERVING", "version":"v1.0.1"}
 ```
 
 
