@@ -50,7 +50,7 @@ $ docker build --no-cache -t greeter-server-image:v1 -f greeter_server/Dockerfil
 $ docker run -p 5001:5001 --name greeter-server --rm greeter-server-image:v1 #serverの起動
 ```
 
-※ DEMO _VERSIONに指定した文字列は、health checkのresoponseに出力されます
+※ DEMO _VERSIONに指定した文字列は、health checkのresponseに出力されます
 
 ```
 $ docker build --no-cache -t greeter-gateway-image:v1 -f greeter_gateway/Dockerfile . #gatewayのDockerイメージビルド
