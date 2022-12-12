@@ -30,12 +30,16 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: Extract version info
+        id: extracted-version
+        run: echo info=${{ github.head_ref } | sed s/=.*\\//=/ >> $GITHUB_OUTPUT
+
       - name: demo-grpc-server push to ECR
         id: build-image-demo-grpc-server
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker build --no-cache -t demo-grpc-server -f greeter_server/Dockerfile --build-arg DEMO_VERSION=${{ github.head_ref }##*/} .
+          docker build --no-cache -t demo-grpc-server -f greeter_server/Dockerfile --build-arg DEMO_VERSION=${{ steps.extracted-version.info }} .
           docker tag demo-grpc-server:latest $ECR_REGISTRY/demo-grpc-server:latest
           docker push $ECR_REGISTRY/demo-grpc-server:latest
 
