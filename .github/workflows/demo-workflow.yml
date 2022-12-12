@@ -32,7 +32,7 @@ jobs:
 
       - name: Extract version info
         id: extracted-version
-        run: echo info=${{ github.head_ref } | sed s/=.*\\//=/ >> $GITHUB_OUTPUT
+        run: echo info=${{ github.head_ref }} | sed s/=.*\\//=/ >> $GITHUB_OUTPUT
 
       - name: demo-grpc-server push to ECR
         id: build-image-demo-grpc-server
